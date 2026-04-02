@@ -1,0 +1,6 @@
+dist
+*.cabal
+*.lock
+.stack-work
+dist-*
+*.cabal
