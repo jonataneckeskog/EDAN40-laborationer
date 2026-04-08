@@ -53,16 +53,18 @@ stateOfMind b =
 -- A rule maps a pattern to many answers, so we choose one
 -- at random, and that's our bot
 makePair :: Rule -> IO (Pattern String, Template String)
-{- TO BE WRITTEN -}
-makePair = undefined
+makePair (Rule (pat, templates)) = do
+  rand <- randomIO :: IO Float
+  let randTemplate = pick rand templates
+  return (pat, randTemplate)
 
 rulesApply :: [(Pattern String, Template String)] -> Phrase -> Phrase
-{- TO BE WRITTEN -}
-rulesApply = undefined
-
+--rulesApply pairs input = fromMaybe [] (transformationsApply reflect pairs input)
+rulesApply pairs = fromMaybe [] . transformationsApply reflect pairs
+-- >>> reflect ["i", "will", "never", "see", "my", "reflection", "in", "your", "eyes"]
+-- ["you","will","never","see","your","reflection","in","my","eyes"]
 reflect :: Phrase -> Phrase
-{- TO BE WRITTEN -}
-reflect = undefined
+reflect = map (try (flip (lookup) reflections))
 
 reflections =
   [ ("am", "are"),
@@ -98,8 +100,11 @@ rulesCompile :: [(String, [String])] -> BotBrain
 rulesCompile = map ruleCompile
 
 ruleCompile :: (String, [String]) -> Rule
-{- TO BE WRITTEN -}
-ruleCompile = undefined
+ruleCompile (pat, ts) = Rule (compPattern, templates)
+  where
+    compPattern = starPattern (lowerCase pat)
+    templates = map starPattern ts
+    lowerCase = map toLower
 
 --------------------------------------
 
@@ -107,7 +112,6 @@ ruleCompile = undefined
 -- If we choose one element that represents the wildcard
 -- mkPattern '*' "Hi *!" => [Item 'H', Item 'i', Wildcard, Item '!']
 mkPattern :: (Eq a) => a -> [a] -> Pattern a
-{- TO BE WRITTEN -}
 mkPattern _ [] = Pattern []
 mkPattern wc (x : xs) = Pattern (newItem : ps)
   where
@@ -141,23 +145,41 @@ reduce :: Phrase -> Phrase
 reduce = reductionsApply reductions
 
 reductionsApply :: [(Pattern String, Pattern String)] -> Phrase -> Phrase
-{- TO BE WRITTEN -}
-reductionsApply = undefined
+reductionsApply pairs = fix (try (transformationsApply id pairs)) 
 
 -------------------------------------------------------
 -- Match and substitute
 --------------------------------------------------------
 
 -- Replaces a wildcard in a template with the list given as the third argument
+-- >>> substitute (mkPattern 'x' "3*cos(x) + 4 - x") "5.37"
+-- "3*cos(5.37) + 4 - 5.37"
+
 substitute :: (Eq a) => Template a -> [a] -> [a]
-{- TO BE WRITTEN -}
-substitute = undefined
+substitute _ [] = []
+substitute (Pattern []) _ = []
+substitute (Pattern (Wildcard : ps)) x = x ++ substitute (Pattern ps) x
+substitute (Pattern (Item a : ps)) x = a : substitute (Pattern ps) x
 
 -- Tries to match two lists. If they match, the result consists of the sublist
 -- bound to the wildcard in the pattern list.
+-- >>> match (mkPattern '*' "What is Haskell") "What is Haskell" 
+-- Just ""
+-- >>> match (Pattern []) []
+-- Just []
+-- >>> match (mkPattern 'x' "2*x+3") "2*7+3"
+-- Just "7"
+-- >>> match (mkPattern '*' "* and *") "you and me"
+-- Just "you"
+
 match :: (Eq a) => Pattern a -> [a] -> Maybe [a]
-{- TO BE WRITTEN -}
-match = undefined
+match (Pattern []) [] = Just []
+match (Pattern []) x = Nothing
+match ps [] = Nothing
+match (Pattern (Item a : ps)) (x : xs) = if a == x 
+  then match (Pattern ps) xs
+  else Nothing 
+match p x = orElse (singleWildcardMatch p x) (longerWildcardMatch p x)
 
 -- Helper function to match
 singleWildcardMatch, longerWildcardMatch :: (Eq a) => Pattern a -> [a] -> Maybe [a]
@@ -165,8 +187,11 @@ singleWildcardMatch (Pattern (Wildcard : ps)) (x : xs) =
   case match (Pattern ps) xs of
     Nothing -> Nothing
     Just _ -> Just [x]
-{- TO BE WRITTEN -}
-longerWildcardMatch = undefined
+
+longerWildcardMatch ps (x : xs) = 
+  case match ps xs of
+    Nothing -> Nothing
+    Just result -> Just (x : result)
 
 -------------------------------------------------------
 -- Applying patterns transformations
@@ -178,10 +203,15 @@ matchAndTransform transform pat = (mmap transform) . (match pat)
 
 -- Applying a single pattern
 transformationApply :: (Eq a) => ([a] -> [a]) -> [a] -> (Pattern a, Template a) -> Maybe [a]
-{- TO BE WRITTEN -}
-transformationApply = undefined
+transformationApply transform input (inputPattern, outputTemplate) = 
+  case matchAndTransform transform inputPattern input of
+    Nothing -> Nothing
+    Just result -> Just (substitute outputTemplate result)
 
 -- Applying a list of patterns until one succeeds
 transformationsApply :: (Eq a) => ([a] -> [a]) -> [(Pattern a, Template a)] -> [a] -> Maybe [a]
-{- TO BE WRITTEN -}
-transformationsApply = undefined
+transformationsApply _ [] _ = Nothing
+transformationsApply transform ((inputPattern, outputTemplate) : ps) input = 
+  orElse (transformationApply transform input (inputPattern, outputTemplate)) 
+  (transformationsApply transform ps input)
+
