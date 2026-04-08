@@ -64,7 +64,7 @@ rulesApply pairs = fromMaybe [] . transformationsApply reflect pairs
 -- >>> reflect ["i", "will", "never", "see", "my", "reflection", "in", "your", "eyes"]
 -- ["you","will","never","see","your","reflection","in","my","eyes"]
 reflect :: Phrase -> Phrase
-reflect = map (try (flip (lookup) reflections))
+reflect = map (try (flip lookup reflections))
 
 reflections =
   [ ("am", "are"),
