@@ -1,4 +1,4 @@
--- Jonatan Eckeskog, Anders Persson
+-- Jonatan Eckeskog, Anders Pehrsson
 
 module Chatterbot where
 
@@ -52,6 +52,8 @@ stateOfMind b =
 
 -- A rule maps a pattern to many answers, so we choose one
 -- at random, and that's our bot
+-- >>> makePair (ruleCompile ("What is Haskell", ["Oh, I thought you knew that. It is a functional programming language featuring strong typing and lazy evaluation."]))
+-- (Pattern [Item "what",Item "is",Item "haskell"],Pattern [Item "Oh,",Item "I",Item "thought",Item "you",Item "knew",Item "that.",Item "It",Item "is",Item "a",Item "functional",Item "programming",Item "language",Item "featuring",Item "strong",Item "typing",Item "and",Item "lazy",Item "evaluation."])
 makePair :: Rule -> IO (Pattern String, Template String)
 makePair (Rule (pat, templates)) = do
   rand <- randomIO :: IO Float
@@ -59,12 +61,13 @@ makePair (Rule (pat, templates)) = do
   return (pat, randTemplate)
 
 rulesApply :: [(Pattern String, Template String)] -> Phrase -> Phrase
---rulesApply pairs input = fromMaybe [] (transformationsApply reflect pairs input)
-rulesApply pairs = fromMaybe [] . transformationsApply reflect pairs
+rulesApply = (fromMaybe [] .) . transformationsApply reflect
 -- >>> reflect ["i", "will", "never", "see", "my", "reflection", "in", "your", "eyes"]
 -- ["you","will","never","see","your","reflection","in","my","eyes"]
+-- >>> reflect (words "count on you")
+-- ["count","on","me"]
 reflect :: Phrase -> Phrase
-reflect = map (try (flip lookup reflections))
+reflect = map (try (`lookup` reflections))
 
 reflections =
   [ ("am", "are"),
@@ -100,11 +103,10 @@ rulesCompile :: [(String, [String])] -> BotBrain
 rulesCompile = map ruleCompile
 
 ruleCompile :: (String, [String]) -> Rule
-ruleCompile (pat, ts) = Rule (compPattern, templates)
+ruleCompile (pat, ts) = Rule (compPattern pat, templates ts)
   where
-    compPattern = starPattern (lowerCase pat)
-    templates = map starPattern ts
-    lowerCase = map toLower
+    compPattern = starPattern . map toLower
+    templates = map starPattern
 
 --------------------------------------
 
@@ -113,9 +115,9 @@ ruleCompile (pat, ts) = Rule (compPattern, templates)
 -- mkPattern '*' "Hi *!" => [Item 'H', Item 'i', Wildcard, Item '!']
 mkPattern :: (Eq a) => a -> [a] -> Pattern a
 mkPattern _ [] = Pattern []
-mkPattern wc (x : xs) = Pattern (newItem : ps)
+mkPattern wc (x : xs) = Pattern (newElem : ps)
   where
-    newItem = if x == wc then Wildcard else Item x
+    newElem = if x == wc then Wildcard else Item x
     Pattern ps = mkPattern wc xs
 
 stringToPattern :: String -> String -> Pattern String
@@ -154,9 +156,10 @@ reductionsApply pairs = fix (try (transformationsApply id pairs))
 -- Replaces a wildcard in a template with the list given as the third argument
 -- >>> substitute (mkPattern 'x' "3*cos(x) + 4 - x") "5.37"
 -- "3*cos(5.37) + 4 - 5.37"
+-- >>> substitute (mkPattern '*' "Speak up! I can't hear you.") ""
+-- "Speak up! I can't hear you."
 
 substitute :: (Eq a) => Template a -> [a] -> [a]
-substitute _ [] = []
 substitute (Pattern []) _ = []
 substitute (Pattern (Wildcard : ps)) x = x ++ substitute (Pattern ps) x
 substitute (Pattern (Item a : ps)) x = a : substitute (Pattern ps) x
@@ -183,15 +186,9 @@ match p x = orElse (singleWildcardMatch p x) (longerWildcardMatch p x)
 
 -- Helper function to match
 singleWildcardMatch, longerWildcardMatch :: (Eq a) => Pattern a -> [a] -> Maybe [a]
-singleWildcardMatch (Pattern (Wildcard : ps)) (x : xs) =
-  case match (Pattern ps) xs of
-    Nothing -> Nothing
-    Just _ -> Just [x]
+singleWildcardMatch (Pattern (Wildcard : ps)) (x : xs) = fmap (const [x]) (match (Pattern ps) xs)
 
-longerWildcardMatch ps (x : xs) = 
-  case match ps xs of
-    Nothing -> Nothing
-    Just result -> Just (x : result)
+longerWildcardMatch ps (x : xs) = fmap (x : ) (match ps xs)
 
 -------------------------------------------------------
 -- Applying patterns transformations
@@ -204,14 +201,11 @@ matchAndTransform transform pat = (mmap transform) . (match pat)
 -- Applying a single pattern
 transformationApply :: (Eq a) => ([a] -> [a]) -> [a] -> (Pattern a, Template a) -> Maybe [a]
 transformationApply transform input (inputPattern, outputTemplate) = 
-  case matchAndTransform transform inputPattern input of
-    Nothing -> Nothing
-    Just result -> Just (substitute outputTemplate result)
+  fmap applyTemplate matchPattern
+  where
+    applyTemplate = substitute outputTemplate
+    matchPattern = matchAndTransform transform inputPattern input
 
 -- Applying a list of patterns until one succeeds
 transformationsApply :: (Eq a) => ([a] -> [a]) -> [(Pattern a, Template a)] -> [a] -> Maybe [a]
-transformationsApply _ [] _ = Nothing
-transformationsApply transform ((inputPattern, outputTemplate) : ps) input = 
-  orElse (transformationApply transform input (inputPattern, outputTemplate)) 
-  (transformationsApply transform ps input)
-
+transformationsApply transform ps input = foldr (orElse . transformationApply transform input) Nothing ps
