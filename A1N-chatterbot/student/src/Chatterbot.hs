@@ -1,4 +1,5 @@
 -- Jonatan Eckeskog, Anders Persson
+{-# LANGUAGE LambdaCase #-}
 
 module Chatterbot where
 
@@ -150,8 +151,13 @@ reductionsApply = undefined
 
 -- Replaces a wildcard in a template with the list given as the third argument
 substitute :: (Eq a) => Template a -> [a] -> [a]
-{- TO BE WRITTEN -}
-substitute = undefined
+substitute (Pattern t) xs =
+  concatMap
+    ( \case
+        Wildcard -> xs
+        Item x -> [x]
+    )
+    t
 
 -- Tries to match two lists. If they match, the result consists of the sublist
 -- bound to the wildcard in the pattern list.
