@@ -175,7 +175,6 @@ singleWildcardMatch (Pattern (Wildcard : ps)) (x : xs) =
     Nothing -> Nothing
     Just _ -> Just [x]
 -- mmap in Utilities.hs. (x:) is a function waiting for a list to attach. In this case, the type is String -> String.
--- mmap in Utilities.hs with a lambda function.
 longerWildcardMatch (Pattern (Wildcard : ps)) (x : xs) = mmap (x:) (match (Pattern (Wildcard : ps)) xs)
 
 -------------------------------------------------------
