@@ -108,7 +108,6 @@ ruleCompile = undefined
 -- If we choose one element that represents the wildcard
 -- mkPattern '*' "Hi *!" => [Item 'H', Item 'i', Wildcard, Item '!']
 mkPattern :: (Eq a) => a -> [a] -> Pattern a
-{- TO BE WRITTEN -}
 mkPattern _ [] = Pattern []
 mkPattern wc (x : xs) = Pattern (newItem : ps)
   where
@@ -162,8 +161,12 @@ substitute (Pattern t) xs =
 -- Tries to match two lists. If they match, the result consists of the sublist
 -- bound to the wildcard in the pattern list.
 match :: (Eq a) => Pattern a -> [a] -> Maybe [a]
-{- TO BE WRITTEN -}
-match = undefined
+match (Pattern []) [] = Just []
+match (Pattern []) _ = Nothing
+match (Pattern (Item p : ps)) (x : xs) = if p == x then match (Pattern ps) xs else Nothing
+-- orElse in Utilities.hs. If singleWildcardMatch returns Just, we pick that, otherwise we look at the longerWildcardMatch.
+match (Pattern (Wildcard : ps)) (x : xs) = singleWildcardMatch (Pattern (Wildcard : ps)) (x : xs) `orElse` longerWildcardMatch (Pattern (Wildcard : ps)) (x : xs)
+match _ _ = Nothing
 
 -- Helper function to match
 singleWildcardMatch, longerWildcardMatch :: (Eq a) => Pattern a -> [a] -> Maybe [a]
@@ -171,8 +174,9 @@ singleWildcardMatch (Pattern (Wildcard : ps)) (x : xs) =
   case match (Pattern ps) xs of
     Nothing -> Nothing
     Just _ -> Just [x]
-{- TO BE WRITTEN -}
-longerWildcardMatch = undefined
+-- mmap in Utilities.hs. (x:) is a function waiting for a list to attach. In this case, the type is String -> String.
+-- mmap in Utilities.hs with a lambda function.
+longerWildcardMatch (Pattern (Wildcard : ps)) (x : xs) = mmap (x:) (match (Pattern (Wildcard : ps)) xs)
 
 -------------------------------------------------------
 -- Applying patterns transformations
