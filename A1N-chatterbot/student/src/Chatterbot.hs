@@ -58,12 +58,17 @@ makePair :: Rule -> IO (Pattern String, Template String)
 makePair = undefined
 
 rulesApply :: [(Pattern String, Template String)] -> Phrase -> Phrase
-{- TO BE WRITTEN -}
-rulesApply = undefined
+-- MATCH the phrase with a pattern: transformationsApply is used for this.
+-- Into the transformationsApply we send in the reflect function and the rules. This evaluates to a
+-- single function.
+-- REFLECT the match: Into this 'super'-function we can send in the phrase now, and all wildcards in the
+-- phrase are replaced according to the rules in reflect.
+-- Substitute the match in the target pattern: Since (transformationsApply reflect rules) yields something
+-- that yields a Maybe, we need to use try to make sure it's applies safely to phrase.
+rulesApply rules phrase = try (transformationsApply reflect rules) phrase
 
 reflect :: Phrase -> Phrase
-{- TO BE WRITTEN -}
-reflect = undefined
+reflect p = map (\w -> try (\x -> lookup x reflections) w) p
 
 reflections =
   [ ("am", "are"),
