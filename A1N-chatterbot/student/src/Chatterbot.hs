@@ -183,14 +183,13 @@ longerWildcardMatch (Pattern (Wildcard : ps)) (x : xs) = mmap (x:) (match (Patte
 
 -- Helper function: Matches a pattern and applies the transformation
 matchAndTransform :: (Eq a) => ([a] -> [a]) -> Pattern a -> [a] -> Maybe [a]
-matchAndTransform transform pat = (mmap transform) . (match pat)
+matchAndTransform transform pat = mmap transform . match pat
 
 -- Applying a single pattern
 transformationApply :: (Eq a) => ([a] -> [a]) -> [a] -> (Pattern a, Template a) -> Maybe [a]
-{- TO BE WRITTEN -}
-transformationApply = undefined
+transformationApply f str (p, t) = mmap (substitute t . f) (match p str)
 
 -- Applying a list of patterns until one succeeds
 transformationsApply :: (Eq a) => ([a] -> [a]) -> [(Pattern a, Template a)] -> [a] -> Maybe [a]
-{- TO BE WRITTEN -}
-transformationsApply = undefined
+transformationsApply _ [] _ = Nothing
+transformationsApply f (t:ts) str = transformationApply f str t `orElse` transformationsApply f ts str
