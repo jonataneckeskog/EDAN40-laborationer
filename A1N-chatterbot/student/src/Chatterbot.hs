@@ -76,7 +76,7 @@ rulesApply :: [(Pattern String, Template String)] -> Phrase -> Phrase
 -- phrase are replaced according to the rules in reflect.
 -- Substitute the match in the target pattern: Since (transformationsApply reflect rules) yields something
 -- that yields a Maybe, we need to use try to make sure it's applies safely to phrase.
-rulesApply rules phrase = try (transformationsApply reflect rules) phrase
+rulesApply rules = try (transformationsApply reflect rules)
 
 reflections =
   [ ("am", "are"),
@@ -213,4 +213,3 @@ transformationApply f str (p, t) = mmap (substitute t . f) (match p str)
 -- Applying a list of patterns until one succeeds
 transformationsApply :: (Eq a) => ([a] -> [a]) -> [(Pattern a, Template a)] -> [a] -> Maybe [a]
 transformationsApply transform ps input = foldr (orElse . transformationApply transform input) Nothing ps
-
