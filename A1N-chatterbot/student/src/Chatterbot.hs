@@ -55,19 +55,28 @@ stateOfMind b =
 -- >>> makePair (ruleCompile ("What is Haskell", ["Oh, I thought you knew that. It is a functional programming language featuring strong typing and lazy evaluation."]))
 -- (Pattern [Item "what",Item "is",Item "haskell"],Pattern [Item "Oh,",Item "I",Item "thought",Item "you",Item "knew",Item "that.",Item "It",Item "is",Item "a",Item "functional",Item "programming",Item "language",Item "featuring",Item "strong",Item "typing",Item "and",Item "lazy",Item "evaluation."])
 makePair :: Rule -> IO (Pattern String, Template String)
-makePair (Rule (pat, templates)) = do
-  rand <- randomIO :: IO Float
-  let randTemplate = pick rand templates
-  return (pat, randTemplate)
+makePair (Rule (pat, [])) = error "This rule has no templates to choose from."
+makePair (Rule (p, ts)) = do
+  index <- randomRIO (0, length ts - 1) -- get a random index based on the length of the template list
+                                        -- and immidiately unwrap it from the box with <-.
+  return (p, ts !! index) -- !! is used to get the element in ts at position index, like a get(i)
 
-rulesApply :: [(Pattern String, Template String)] -> Phrase -> Phrase
-rulesApply = (fromMaybe [] .) . transformationsApply reflect
 -- >>> reflect ["i", "will", "never", "see", "my", "reflection", "in", "your", "eyes"]
 -- ["you","will","never","see","your","reflection","in","my","eyes"]
 -- >>> reflect (words "count on you")
 -- ["count","on","me"]
 reflect :: Phrase -> Phrase
 reflect = map (try (`lookup` reflections))
+
+rulesApply :: [(Pattern String, Template String)] -> Phrase -> Phrase
+-- MATCH the phrase with a pattern: transformationsApply is used for this.
+-- Into the transformationsApply we send in the reflect function and the rules. This evaluates to a
+-- single function.
+-- REFLECT the match: Into this 'super'-function we can send in the phrase now, and all wildcards in the
+-- phrase are replaced according to the rules in reflect.
+-- Substitute the match in the target pattern: Since (transformationsApply reflect rules) yields something
+-- that yields a Maybe, we need to use try to make sure it's applies safely to phrase.
+rulesApply rules phrase = try (transformationsApply reflect rules) phrase
 
 reflections =
   [ ("am", "are"),
@@ -103,10 +112,7 @@ rulesCompile :: [(String, [String])] -> BotBrain
 rulesCompile = map ruleCompile
 
 ruleCompile :: (String, [String]) -> Rule
-ruleCompile (pat, ts) = Rule (compPattern pat, templates ts)
-  where
-    compPattern = starPattern . map toLower
-    templates = map starPattern
+ruleCompile (p, ts) = Rule (starPattern (map toLower p), map starPattern ts)
 
 --------------------------------------
 
@@ -147,7 +153,7 @@ reduce :: Phrase -> Phrase
 reduce = reductionsApply reductions
 
 reductionsApply :: [(Pattern String, Pattern String)] -> Phrase -> Phrase
-reductionsApply pairs = fix (try (transformationsApply id pairs)) 
+reductionsApply = fix . try . transformationsApply id
 
 -------------------------------------------------------
 -- Match and substitute
@@ -177,18 +183,20 @@ substitute (Pattern (Item a : ps)) x = a : substitute (Pattern ps) x
 
 match :: (Eq a) => Pattern a -> [a] -> Maybe [a]
 match (Pattern []) [] = Just []
-match (Pattern []) x = Nothing
-match ps [] = Nothing
-match (Pattern (Item a : ps)) (x : xs) = if a == x 
-  then match (Pattern ps) xs
-  else Nothing 
-match p x = orElse (singleWildcardMatch p x) (longerWildcardMatch p x)
+match (Pattern []) _ = Nothing
+match (Pattern (Item p : ps)) (x : xs) = if p == x then match (Pattern ps) xs else Nothing
+-- orElse in Utilities.hs. If singleWildcardMatch returns Just, we pick that, otherwise we look at the longerWildcardMatch.
+match (Pattern (Wildcard : ps)) (x : xs) = singleWildcardMatch (Pattern (Wildcard : ps)) (x : xs) `orElse` longerWildcardMatch (Pattern (Wildcard : ps)) (x : xs)
+match _ _ = Nothing
 
 -- Helper function to match
 singleWildcardMatch, longerWildcardMatch :: (Eq a) => Pattern a -> [a] -> Maybe [a]
-singleWildcardMatch (Pattern (Wildcard : ps)) (x : xs) = fmap (const [x]) (match (Pattern ps) xs)
-
-longerWildcardMatch ps (x : xs) = fmap (x : ) (match ps xs)
+singleWildcardMatch (Pattern (Wildcard : ps)) (x : xs) =
+  case match (Pattern ps) xs of
+    Nothing -> Nothing
+    Just _ -> Just [x]
+-- mmap in Utilities.hs. (x:) is a function waiting for a list to attach. In this case, the type is String -> String.
+longerWildcardMatch (Pattern (Wildcard : ps)) (x : xs) = mmap (x:) (match (Pattern (Wildcard : ps)) xs)
 
 -------------------------------------------------------
 -- Applying patterns transformations
@@ -196,16 +204,13 @@ longerWildcardMatch ps (x : xs) = fmap (x : ) (match ps xs)
 
 -- Helper function: Matches a pattern and applies the transformation
 matchAndTransform :: (Eq a) => ([a] -> [a]) -> Pattern a -> [a] -> Maybe [a]
-matchAndTransform transform pat = (mmap transform) . (match pat)
+matchAndTransform transform pat = mmap transform . match pat
 
 -- Applying a single pattern
 transformationApply :: (Eq a) => ([a] -> [a]) -> [a] -> (Pattern a, Template a) -> Maybe [a]
-transformationApply transform input (inputPattern, outputTemplate) = 
-  fmap applyTemplate matchPattern
-  where
-    applyTemplate = substitute outputTemplate
-    matchPattern = matchAndTransform transform inputPattern input
+transformationApply f str (p, t) = mmap (substitute t . f) (match p str)
 
 -- Applying a list of patterns until one succeeds
 transformationsApply :: (Eq a) => ([a] -> [a]) -> [(Pattern a, Template a)] -> [a] -> Maybe [a]
 transformationsApply transform ps input = foldr (orElse . transformationApply transform input) Nothing ps
+
