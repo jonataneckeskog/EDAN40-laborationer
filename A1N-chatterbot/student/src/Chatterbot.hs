@@ -54,8 +54,11 @@ stateOfMind b =
 -- A rule maps a pattern to many answers, so we choose one
 -- at random, and that's our bot
 makePair :: Rule -> IO (Pattern String, Template String)
-{- TO BE WRITTEN -}
-makePair = undefined
+makePair (Rule (pat, [])) = error "This rule has no templates to choose from."
+makePair (Rule (p, ts)) = do
+  index <- randomRIO (0, length ts - 1) -- get a random index based on the length of the template list
+                                        -- and immidiately unwrap it from the box with <-.
+  return (p, ts !! index) -- !! is used to get the element in ts at position index, like a get(i)
 
 rulesApply :: [(Pattern String, Template String)] -> Phrase -> Phrase
 -- MATCH the phrase with a pattern: transformationsApply is used for this.
@@ -104,8 +107,7 @@ rulesCompile :: [(String, [String])] -> BotBrain
 rulesCompile = map ruleCompile
 
 ruleCompile :: (String, [String]) -> Rule
-{- TO BE WRITTEN -}
-ruleCompile = undefined
+ruleCompile (p, ts) = Rule (starPattern (map toLower p), map starPattern ts)
 
 --------------------------------------
 
@@ -146,8 +148,7 @@ reduce :: Phrase -> Phrase
 reduce = reductionsApply reductions
 
 reductionsApply :: [(Pattern String, Pattern String)] -> Phrase -> Phrase
-{- TO BE WRITTEN -}
-reductionsApply = undefined
+reductionsApply = fix . try . transformationsApply id
 
 -------------------------------------------------------
 -- Match and substitute
