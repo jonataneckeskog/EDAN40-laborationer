@@ -1,0 +1,77 @@
+name:                memoization
+version:             0.1.0.0
+github:              "githubuser/memoization"
+license:             BSD-3-Clause
+author:              "Noric Couderc"
+maintainer:          "noric.couderc@cs.lth.se"
+copyright:           "2025 Noric Couderc"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/memoization#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- random >= 1.1
+- mtl
+- containers
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+
+executables:
+  memoization-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - memoization
+
+benchmarks:
+  memoization-benchmarks:
+    main:                Bench.hs
+    source-dirs:         bench
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - memoization
+    - criterion >= 1.6
+
+
+tests:
+  memoization-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - memoization
+    - HUnit
+    - QuickCheck >= 2.14
