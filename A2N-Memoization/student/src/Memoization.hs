@@ -1,15 +1,18 @@
+--Anders Pehrsson
 module Memoization where
 
 -- This is an assignment where we try to memoize functions
 -- To speed up computations.
 
 import Data.Maybe (fromJust)
+import Debug.Trace
 
 -- The problem
 -- If we write a recursive function, it may be slow
 fibo :: Int -> Int
-{- TO BE WRITTEN -}
-fibo = undefined
+fibo 0 = 0
+fibo 1 = 1
+fibo n = fibo (n-1) + fibo (n-2)
 
 -- In GHCI, do,
 -- > :set +s
@@ -56,26 +59,28 @@ runFast = fastFibo1 30
 -- We can make another cache, that works with keys and values
 -- We pass the function and the domain of the keys as an argument
 listCache :: [a] -> (a -> b) -> [(a, b)]
-{- TO BE WRITTEN -}
-listCache domain f = undefined
+listCache domain f = map (\x -> (x, f x)) domain
 
 -- We create a function which looks up the
 -- result in the cache
 -- and use fromJust to get an error if the cache misses.
 listLookup :: Eq a => [(a, b)] -> a -> b
-{- TO BE WRITTEN -}
-listLookup cache value = undefined
+listLookup cache value = fromJust (lookup value cache)
+-- Alternative point-free style: (fromJust .) . flip lookup 
 
 -- Create the cache for all integers...
 -- We use a 'fast fibonacci function' even if we haven't defined it yet!
 fibCache :: [(Int, Int)]
-{- TO BE WRITTEN -}
-fibCache = undefined
+fibCache = listCache [0..] fastFibo2
+-- with fibo it takes fastFibo2 35 (6.64 secs, 5,494,934,792 bytes)
+-- with fastFibo2 it takes fastFibo 35 (0.03 secs, 589,080 bytes)
 
 -- And the fast function looks in the cache!
 fastFibo2 :: Int -> Int
-{- TO BE WRITTEN -}
-fastFibo2 n = undefined
+fastFibo2 0 = 0
+fastFibo2 1 = 1
+fastFibo2 n = listLookup fibCache (n-1) + listLookup fibCache (n-2)
+--trace ("n: " ++ show n) $
 
 -- Pause:
 -- We make the solution in two parts:
@@ -112,8 +117,9 @@ testMemoize n =
 -- It isn't really recursive anymore
 -- And it's easy to implement fibonacci again: (openFib fibo) does that.
 openFib :: (Int -> Int) -> Int -> Int
-{- TO BE WRITTEN -}
-openFib f n = undefined
+openFib _ 0 = 0
+openFib _ 1 = 1
+openFib f n = f (n-1) + f (n-2)
 
 -- We use openFib to create a cached function, and make sure
 -- The recursive calls call the fast version!
@@ -131,8 +137,25 @@ dropLast :: [a] -> [a]
 dropLast l = take (length l - 1) l
 
 -- Slow version
+-- >>> lps "Panama"
+-- "ama"
+--- >>> lps "writers"
+-- "rer"
+--- >>> lps "kayak"
+-- "kayak"
+--- >>> lps "aferociousmonadatemyhamster"
 lps :: String -> String
-lps s = undefined
+lps [] = []
+lps [s] = [s]
+lps (s : xs) 
+    | s == lastChar = (s : lps middle) ++ [lastChar]
+    | otherwise = if length (lps notLast) > length (lps xs) 
+      then lps notLast
+      else lps xs
+      where
+        lastChar = last xs
+        middle = dropLast xs
+        notLast = dropLast (s : xs)
 
 -- CACHES FOR LISTS OF THINGS
 
@@ -148,9 +171,17 @@ data Trie node edge = Trie node [(edge, Trie node edge)]
   deriving Show
 
 -- First, looking for a list in a trie...
+-- >>> trieLookup (Trie 0 [('h', Trie 1 [('i', Trie 2 []), ('o', Trie 2 [])])]) ['h', 'i']
+-- 2
+-- >>> trieLookup (Trie 0 []) []
+-- 0
+-- >>> trieLookup (Trie 0 [('h', Trie 1 [('i', Trie 2 []), ('o', Trie 2 [])])]) ['h', 'm', 'm']
+-- Maybe.fromJust: Nothing
 trieLookup :: Eq e => Trie a e -> [e] -> a
-{- TO BE WRITTEN -}
-trieLookup t l = undefined
+trieLookup (Trie node _) [] = node
+trieLookup (Trie _ es) (l : ls) = trieLookup (fromJust subTrie) ls
+  where 
+    subTrie = lookup l es
 
 -- Get a subset of a trie, with limited depth
 -- (Provided: Useful for debugging)
@@ -162,16 +193,15 @@ limitTrie n (Trie v edges) =
 -- Map a function over all values in the trie
 -- Edge labels stay the same.
 mapTrie :: (a -> b) -> Trie a e -> Trie b e
-{- TO BE WRITTEN -}
-mapTrie f (Trie v cs) = undefined
+mapTrie f (Trie v []) = Trie (f v) []
+mapTrie f (Trie v cs) = Trie (f v) [(l, mapTrie f t) | (l, t) <- cs]
 
 -- To build an infinite trie, we start from the root
 -- The root starts with the empty list...
 -- And from that, we have a number of edges
 -- The domain 'dom' defines how many edges we have per node
 rootTrie :: [a] -> Trie [a] a
-{- TO BE WRITTEN -}
-rootTrie domain = undefined
+rootTrie domain = Trie [] (edges domain [])
 
 -- How do we create the edges?
 -- We look at the domain,
@@ -181,8 +211,7 @@ rootTrie domain = undefined
 -- the domain, the current label
 -- and the current node
 edges :: [a] -> [a] -> [(a, Trie [a] a)]
-{- TO BE WRITTEN -}
-edges domain currentNode = undefined
+edges domain currentNode = [(c, subtree domain c currentNode) | c <- domain]
 
 -- How do we build the subtree?
 -- We use the label we just followed
@@ -190,17 +219,17 @@ edges domain currentNode = undefined
 -- And each child creates more edges!
 -- (using the edges function)
 subtree :: [a] -> a -> [a] -> Trie [a] a
-{- TO BE WRITTEN -}
 subtree domain label parent =
-  undefined
+  Trie newLabel (edges domain newLabel)
+  where
+    newLabel = parent ++ [label]
 
 -- Important: the trie is infinite because edges calls subtree, and subtree calls edges.
 
 -- trieCache builds a cache for a function
 -- provided with a domain (for the list elements)
 trieCache :: [e] -> ([e] -> b) -> Trie b e
-{- TO BE WRITTEN -}
-trieCache domain function = undefined
+trieCache domain function = mapTrie function (rootTrie domain) 
 
 {--
 You can inspect the cache with GHCI!
@@ -246,12 +275,23 @@ s1 = "bananrepubliksinvasionsarmestabsadjutant"
 s2 = "kontrabasfiolfodralmakarmästarlärling"
 
 openLPS :: (String -> String) -> (String -> String)
-openLPS s = undefined -- look at 'lps' for inspiration
+-- look at 'lps' for inspiration
+openLPS _ [] = []
+openLPS _ [s] = [s]
+openLPS f (s : xs) 
+    | s == lastChar = s : f middle ++ [lastChar]
+    | otherwise = if length (f notLast) > length (f xs)
+      then f notLast
+      else f xs
+      where
+        lastChar = last xs
+        middle = dropLast xs
+        notLast = dropLast (s : xs)
 
 -- Fast!
 fastLPS :: String -> String
-fastLPS s =
-  undefined
+fastLPS =
+  trieLookup (trieCache (['a'..'z'] ++ ['å', 'ä', 'ö']) (openLPS fastLPS))
 
 -- So, what were the tricks?
 -- The first one is to build an infinite data-structure, to memoize the function
