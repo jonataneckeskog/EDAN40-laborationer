@@ -70,13 +70,23 @@ listLookup ((a, b) : xs) y = if a == y then b else listLookup xs y
 -- Create the cache for all integers...
 -- We use a 'fast fibonacci function' even if we haven't defined it yet!
 fibCache :: [(Int, Int)]
-{- TO BE WRITTEN -}
-fibCache = undefined
+fibCache = listCache [0 ..] fastFibo2
 
 -- And the fast function looks in the cache!
 fastFibo2 :: Int -> Int
-{- TO BE WRITTEN -}
-fastFibo2 n = undefined
+fastFibo2 0 = 0
+fastFibo2 1 = 1
+fastFibo2 n =
+  let n1 = listLookup fibCache (n - 1)
+      n2 = listLookup fibCache (n - 2)
+   in n1 + n2
+
+-- Runtime speed for fibonacci functions:
+---- fibo 35: (5.63 secs, 5,495,243,200 bytes)
+---- fastFibo2 35: (5.69 secs, 5,495,275,392 bytes)
+-- The two are about equal, but when changing the fibCache function for fastFibo2,
+-- the runtime statistics become:
+---- fastFibo2 35: (0.01 secs, 1,209,136 bytes)
 
 -- Pause:
 -- We make the solution in two parts:
@@ -113,8 +123,9 @@ testMemoize n =
 -- It isn't really recursive anymore
 -- And it's easy to implement fibonacci again: (openFib fibo) does that.
 openFib :: (Int -> Int) -> Int -> Int
-{- TO BE WRITTEN -}
-openFib f n = undefined
+openFib _ 0 = 0
+openFib _ 1 = 1
+openFib f n = f (n - 1) + f (n - 2)
 
 -- We use openFib to create a cached function, and make sure
 -- The recursive calls call the fast version!
