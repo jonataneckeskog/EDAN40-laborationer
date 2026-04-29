@@ -1,0 +1,26 @@
+/home/jonataneckeskog/.ghcup/ghc/9.10.3/lib/ghc-9.10.3/lib/x86_64-linux-ghc-9.10.3/rts-1.0.2/include/ghcversion.h:
+  hash: 7590ea01e313d089c303211ba85b0e4454627be40dcb88be287ed32f7e97187f
+? /home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N
+  - Memoization/student/.stack-work/dist/x86_64-linux/ghc-9.10.3/build/autogen/Paths_memoization.hs
+: hash: 25c610bc182d21678841a2b7f41ab08164b5eeebc504187598f4da97edaba8b4
+? /home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N
+  - Memoization/student/.stack-work/dist/x86_64-linux/ghc-9.10.3/build/autogen/cabal_macros.h
+: hash: fbb98578b5dfacf3089a97d9e4b63c7e89b3c95ea536c989e63cd0b2f35adc8f
+/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N - Memoization/student/CHANGELOG.md:
+  hash: 84341018d47b3a635a896225813f5259b22099e0d5987f5d14aa5b9d42790d7a
+/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N - Memoization/student/README.md:
+  hash: d13fcaa23cdd2256079872bb2e0c41b40f98d919fe1c5792be6ff7b788e0aa29
+/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N - Memoization/student/memoization.cabal:
+  hash: 42234d833ecf3bbfa189800ac5ce855939f090d50829a5d2a98d42e892aacea2
+/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N - Memoization/student/package.yaml:
+  hash: 475e86c9feadcbb0e3b462677d38c49643e8029937d26faccd674fc4ba77c4a8
+/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N - Memoization/student/src/Memoization.hs:
+  hash: bf549f0199cba133b41d4e342a398aded82a34d7eb35850ac34572e9d59ce0b4
+? /home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N
+  - Memoization/student/src/MonadicMemoization.hs
+: hash: ecc06c6e1c33b57a6740a81989dc051f5b764ac21ff9a634de284708e414beb2
+? /home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N
+  - Memoization/student/src/StringAlignment.hs
+: hash: 26a36cfb682874962189e58f01601f1444b0ea7afe9eadbb878b7f7a549fe39a
+/usr/include/stdc-predef.h:
+  hash: 8db4f65e62cade8ae4d9b77960ee6aee093255acc1b637e3fb37d79179733b15

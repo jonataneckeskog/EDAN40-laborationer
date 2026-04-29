@@ -8,8 +8,9 @@ import Data.Maybe (fromJust)
 -- The problem
 -- If we write a recursive function, it may be slow
 fibo :: Int -> Int
-{- TO BE WRITTEN -}
-fibo = undefined
+fibo 0 = 0
+fibo 1 = 1
+fibo n = fibo (n-1) + fibo (n-2)
 
 -- In GHCI, do,
 -- > :set +s

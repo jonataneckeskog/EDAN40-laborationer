@@ -1,0 +1,20 @@
+/home/jonataneckeskog/.ghcup/ghc/9.10.3/lib/ghc-9.10.3/lib/x86_64-linux-ghc-9.10.3/rts-1.0.2/include/ghcversion.h:
+  hash: 7590ea01e313d089c303211ba85b0e4454627be40dcb88be287ed32f7e97187f
+? /home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N
+  - Memoization/student/.stack-work/dist/x86_64-linux/ghc-9.10.3/build/memoization-test/autogen/Paths_memoization.hs
+: hash: 00e76fb16c913c249c8d087519c194fdcfa6ce0a825a75cf5e4ab846412e6435
+? /home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N
+  - Memoization/student/.stack-work/dist/x86_64-linux/ghc-9.10.3/build/memoization-test/autogen/cabal_macros.h
+: hash: ec18e83f3f6cf9ccd483a37f82b8b091f61fa0b76cf86c1422e7ad8f56430787
+/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N - Memoization/student/CHANGELOG.md:
+  hash: 84341018d47b3a635a896225813f5259b22099e0d5987f5d14aa5b9d42790d7a
+/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N - Memoization/student/README.md:
+  hash: d13fcaa23cdd2256079872bb2e0c41b40f98d919fe1c5792be6ff7b788e0aa29
+/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N - Memoization/student/memoization.cabal:
+  hash: 42234d833ecf3bbfa189800ac5ce855939f090d50829a5d2a98d42e892aacea2
+/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N - Memoization/student/package.yaml:
+  hash: 475e86c9feadcbb0e3b462677d38c49643e8029937d26faccd674fc4ba77c4a8
+/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/A2N - Memoization/student/test/Spec.hs:
+  hash: 8613e6ea5859ed14a3599b463846bfd7ff5c577b8a66ec4e0ff6dc8e4ad9cf1d
+/usr/include/stdc-predef.h:
+  hash: 8db4f65e62cade8ae4d9b77960ee6aee093255acc1b637e3fb37d79179733b15
