@@ -10,7 +10,7 @@ import Data.Maybe (fromJust)
 fibo :: Int -> Int
 fibo 0 = 0
 fibo 1 = 1
-fibo n = fibo (n-1) + fibo (n-2)
+fibo n = fibo (n - 1) + fibo (n - 2)
 
 -- In GHCI, do,
 -- > :set +s
@@ -23,8 +23,8 @@ runSlow = fibo 30
 -- We can make it faster, by creating a cache
 -- This takes a function and creates an infinite list of the results
 -- (This works because Haskell doesn't evaluate things before we need them)
-mkCache :: (Num a , Enum a ) => (a -> b) -> [b]
-mkCache f = map f [0..]
+mkCache :: (Num a, Enum a) => (a -> b) -> [b]
+mkCache f = map f [0 ..]
 
 -- And we make a function to look for a value in a cache
 evalCache :: [a] -> Int -> a
@@ -44,7 +44,7 @@ fastFibo1 0 = 0
 fastFibo1 1 = 1
 fastFibo1 n =
   let fib = evalCache fiboCache
-  in fib (n-1) + fib (n-2)
+   in fib (n - 1) + fib (n - 2)
 
 -- We can see the cache growing by doing, in GHCI
 -- > :print fiboCache -- Prints just 'fiboCache = (_t1::[Integer])' since the list isn't evaluated yet
@@ -57,15 +57,15 @@ runFast = fastFibo1 30
 -- We can make another cache, that works with keys and values
 -- We pass the function and the domain of the keys as an argument
 listCache :: [a] -> (a -> b) -> [(a, b)]
-{- TO BE WRITTEN -}
-listCache domain f = undefined
+listCache [] _ = []
+listCache (x : xs) f = (x, f x) : listCache xs f
 
 -- We create a function which looks up the
 -- result in the cache
 -- and use fromJust to get an error if the cache misses.
-listLookup :: Eq a => [(a, b)] -> a -> b
-{- TO BE WRITTEN -}
-listLookup cache value = undefined
+listLookup :: (Eq a) => [(a, b)] -> a -> b
+listLookup [] _ = error "element does not exist in the list cache"
+listLookup ((a, b) : xs) y = if a == y then b else listLookup xs y
 
 -- Create the cache for all integers...
 -- We use a 'fast fibonacci function' even if we haven't defined it yet!
@@ -90,14 +90,14 @@ fastFibo2 n = undefined
 
 -- Now, for something cool
 -- What if we make a function that creates the cache, and immediately looks in it?
-memoizeWithList :: Eq a => [a] -> (a -> b) -> (a -> b)
+memoizeWithList :: (Eq a) => [a] -> (a -> b) -> (a -> b)
 memoizeWithList domain = listLookup . listCache domain
 
 -- Maybe we can use it to memoize the old fibo function?
 testMemoize :: Int -> Int
 testMemoize n =
-  let fibo2 = memoizeWithList [0..] fibo
-  in fibo2 n
+  let fibo2 = memoizeWithList [0 ..] fibo
+   in fibo2 n
 
 -- It doesn't work... because the old fibo function calls itself
 -- So even if we use memoize, the recursive calls don't use the cache...
@@ -119,7 +119,7 @@ openFib f n = undefined
 -- We use openFib to create a cached function, and make sure
 -- The recursive calls call the fast version!
 fastFibo3 :: Int -> Int
-fastFibo3 = memoizeWithList [0..] (openFib fastFibo3)
+fastFibo3 = memoizeWithList [0 ..] (openFib fastFibo3)
 
 -- The memoize function creates the cache and looks in it immediately
 -- And because of Lazy evaluation, we get a function that takes a slow
@@ -146,10 +146,10 @@ lps s = undefined
 -- to its children, where each label has type 'edge'
 -- 'node' and 'edge' can be any types.
 data Trie node edge = Trie node [(edge, Trie node edge)]
-  deriving Show
+  deriving (Show)
 
 -- First, looking for a list in a trie...
-trieLookup :: Eq e => Trie a e -> [e] -> a
+trieLookup :: (Eq e) => Trie a e -> [e] -> a
 {- TO BE WRITTEN -}
 trieLookup t l = undefined
 
@@ -158,7 +158,7 @@ trieLookup t l = undefined
 limitTrie :: Int -> Trie n e -> Trie n e
 limitTrie 0 (Trie v _) = Trie v []
 limitTrie n (Trie v edges) =
-  Trie v [(l, limitTrie (n-1) t) | (l, t) <- edges]
+  Trie v [(l, limitTrie (n - 1) t) | (l, t) <- edges]
 
 -- Map a function over all values in the trie
 -- Edge labels stay the same.
@@ -228,8 +228,8 @@ Prints the cache, and you should be able to see it has grown
 --}
 
 testTrie =
-  let cache = mapTrie reverse $ rootTrie ['a'..'z']
-  in trieLookup cache
+  let cache = mapTrie reverse $ rootTrie ['a' .. 'z']
+   in trieLookup cache
 
 -- We can test it on the LPS function
 -- Computes the "longest palyndromic subsequence"
@@ -240,10 +240,15 @@ testTrie =
 
 -- First, some test strings
 k1 = "writers"
+
 k2 = "vintner"
+
 l1 = "aferociousmonadatemyhamster"
+
 l2 = "functionalprogrammingrules"
+
 s1 = "bananrepubliksinvasionsarmestabsadjutant"
+
 s2 = "kontrabasfiolfodralmakarmästarlärling"
 
 openLPS :: (String -> String) -> (String -> String)
