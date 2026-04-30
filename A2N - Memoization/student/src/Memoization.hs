@@ -144,7 +144,16 @@ dropLast l = take (length l - 1) l
 
 -- Slow version
 lps :: String -> String
-lps s = undefined
+lps "" = ""
+lps [x] = [x]
+lps str@(x : xs)
+  | x == last xs = x : lps (dropLast xs) ++ [x]
+  | otherwise =
+      let leftDrop = lps xs
+          rightDrop = lps (dropLast str)
+       in if length leftDrop >= length rightDrop
+            then leftDrop
+            else rightDrop
 
 -- CACHES FOR LISTS OF THINGS
 
@@ -161,8 +170,11 @@ data Trie node edge = Trie node [(edge, Trie node edge)]
 
 -- First, looking for a list in a trie...
 trieLookup :: (Eq e) => Trie a e -> [e] -> a
-{- TO BE WRITTEN -}
-trieLookup t l = undefined
+trieLookup (Trie node _) [] = node
+trieLookup (Trie _ children) (x : xs) =
+  case lookup x children of
+    Just nextTrie -> trieLookup nextTrie xs
+    Nothing -> error "element does not exist in the trie"
 
 -- Get a subset of a trie, with limited depth
 -- (Provided: Useful for debugging)
@@ -174,8 +186,8 @@ limitTrie n (Trie v edges) =
 -- Map a function over all values in the trie
 -- Edge labels stay the same.
 mapTrie :: (a -> b) -> Trie a e -> Trie b e
-{- TO BE WRITTEN -}
-mapTrie f (Trie v cs) = undefined
+mapTrie f (Trie v []) = Trie (f v) []
+mapTrie f (Trie v edges) = Trie (f v) (map (\(e, t) -> (e, mapTrie f t)) edges)
 
 -- To build an infinite trie, we start from the root
 -- The root starts with the empty list...
