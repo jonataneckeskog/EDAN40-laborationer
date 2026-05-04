@@ -194,8 +194,11 @@ mapTrie f (Trie v edges) = Trie (f v) (map (\(e, t) -> (e, mapTrie f t)) edges)
 -- And from that, we have a number of edges
 -- The domain 'dom' defines how many edges we have per node
 rootTrie :: [a] -> Trie [a] a
-{- TO BE WRITTEN -}
-rootTrie domain = undefined
+rootTrie domain = mapTrie reverse (build [])
+  where
+    build path = Trie path (map (\e -> (e, build (e : path))) domain)
+
+-- rootTrie domain = mapTire reverse (Trie [] (edges domain []))
 
 -- How do we create the edges?
 -- We look at the domain,
@@ -205,8 +208,7 @@ rootTrie domain = undefined
 -- the domain, the current label
 -- and the current node
 edges :: [a] -> [a] -> [(a, Trie [a] a)]
-{- TO BE WRITTEN -}
-edges domain currentNode = undefined
+edges domain currentNode = map (\lbl -> (lbl, subtree domain lbl currentNode)) domain
 
 -- How do we build the subtree?
 -- We use the label we just followed
@@ -214,17 +216,16 @@ edges domain currentNode = undefined
 -- And each child creates more edges!
 -- (using the edges function)
 subtree :: [a] -> a -> [a] -> Trie [a] a
-{- TO BE WRITTEN -}
 subtree domain label parent =
-  undefined
+  let currentNode = label : parent
+   in Trie currentNode (edges domain currentNode)
 
 -- Important: the trie is infinite because edges calls subtree, and subtree calls edges.
 
 -- trieCache builds a cache for a function
 -- provided with a domain (for the list elements)
 trieCache :: [e] -> ([e] -> b) -> Trie b e
-{- TO BE WRITTEN -}
-trieCache domain function = undefined
+trieCache domain function = mapTrie function (rootTrie domain)
 
 {--
 You can inspect the cache with GHCI!
@@ -275,12 +276,20 @@ s1 = "bananrepubliksinvasionsarmestabsadjutant"
 s2 = "kontrabasfiolfodralmakarmästarlärling"
 
 openLPS :: (String -> String) -> (String -> String)
-openLPS s = undefined -- look at 'lps' for inspiration
+openLPS _ "" = ""
+openLPS _ [x] = [x]
+openLPS f str@(x : xs)
+  | x == last xs = x : f (dropLast xs) ++ [x]
+  | otherwise =
+      let leftDrop = f xs
+          rightDrop = f (dropLast str)
+       in if length leftDrop >= length rightDrop
+            then leftDrop
+            else rightDrop
 
 -- Fast!
 fastLPS :: String -> String
-fastLPS s =
-  undefined
+fastLPS = trieLookup (trieCache (['a' .. 'z'] ++ "äöå") (openLPS fastLPS))
 
 -- So, what were the tricks?
 -- The first one is to build an infinite data-structure, to memoize the function

@@ -143,10 +143,10 @@
 #endif /* MIN_TOOL_VERSION_strip */
 
 #ifndef CURRENT_PACKAGE_KEY
-#define CURRENT_PACKAGE_KEY "memoization-0.1.0.0-FBhB9TeAAMgJPoFD8SVLnN"
+#define CURRENT_PACKAGE_KEY "memoization-0.1.0.0-Ax4RUhHhv0dXfDxuaJrng"
 #endif /* CURRENT_packageKey */
 #ifndef CURRENT_COMPONENT_ID
-#define CURRENT_COMPONENT_ID "memoization-0.1.0.0-FBhB9TeAAMgJPoFD8SVLnN"
+#define CURRENT_COMPONENT_ID "memoization-0.1.0.0-Ax4RUhHhv0dXfDxuaJrng"
 #endif /* CURRENT_COMPONENT_ID */
 #ifndef CURRENT_PACKAGE_VERSION
 #define CURRENT_PACKAGE_VERSION "0.1.0.0"

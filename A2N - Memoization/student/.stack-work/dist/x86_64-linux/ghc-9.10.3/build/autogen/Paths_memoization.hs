@@ -47,7 +47,7 @@ getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir, getSysconfDir :: 
 
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 bindir     = "/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/.stack-work/install/x86_64-linux/65926e05c0228b3f0fd67c515b60d67b6fce2688fd842490f580f88de1fb640e/9.10.3/bin"
-libdir     = "/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/.stack-work/install/x86_64-linux/65926e05c0228b3f0fd67c515b60d67b6fce2688fd842490f580f88de1fb640e/9.10.3/lib/x86_64-linux-ghc-9.10.3-b4c3/memoization-0.1.0.0-FBhB9TeAAMgJPoFD8SVLnN"
+libdir     = "/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/.stack-work/install/x86_64-linux/65926e05c0228b3f0fd67c515b60d67b6fce2688fd842490f580f88de1fb640e/9.10.3/lib/x86_64-linux-ghc-9.10.3-b4c3/memoization-0.1.0.0-Ax4RUhHhv0dXfDxuaJrng"
 dynlibdir  = "/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/.stack-work/install/x86_64-linux/65926e05c0228b3f0fd67c515b60d67b6fce2688fd842490f580f88de1fb640e/9.10.3/lib/x86_64-linux-ghc-9.10.3-b4c3"
 datadir    = "/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/.stack-work/install/x86_64-linux/65926e05c0228b3f0fd67c515b60d67b6fce2688fd842490f580f88de1fb640e/9.10.3/share/x86_64-linux-ghc-9.10.3-b4c3/memoization-0.1.0.0"
 libexecdir = "/home/jonataneckeskog/Datateknik_LTH/Funktionell Programmering/EDAN40-laborationer/.stack-work/install/x86_64-linux/65926e05c0228b3f0fd67c515b60d67b6fce2688fd842490f580f88de1fb640e/9.10.3/libexec/x86_64-linux-ghc-9.10.3-b4c3/memoization-0.1.0.0"
