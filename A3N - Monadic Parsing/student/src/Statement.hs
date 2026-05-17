@@ -68,7 +68,7 @@ instance Parse Statement where
       Assignment s expr -> s ++ " := " ++ toString expr ++ ";"
       If expr thenStmt elseStmt -> "if " ++ toString expr ++ " then " ++ toString thenStmt ++ " else " ++ toString elseStmt
       Skip -> "skip;"
-      Begin stmts -> concatMap toString stmts
-      While expr stmt -> "while " ++ toString expr ++ toString stmt
+      Begin stmts -> "begin " ++ concatMap toString stmts ++ " end"
+      While expr stmt -> "while " ++ toString expr ++ " do " ++ toString stmt
       Read s -> "read " ++ s ++ ";"
       Write expr -> "write " ++ toString expr ++ ";"
