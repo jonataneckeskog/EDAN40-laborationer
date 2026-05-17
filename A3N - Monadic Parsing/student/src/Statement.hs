@@ -10,6 +10,8 @@ type T = Statement
 data Statement
   = Assignment String Expr.T
   | If Expr.T Statement Statement
+  | Skip
+  | Begin [Statement]
   deriving (Show)
 
 -- x =: 5
@@ -25,6 +27,12 @@ ifStatement =
     #- require "else"
     # parse
     >-> \((cond, thenStmts), elseStmts) -> If cond thenStmts elseStmts
+
+-- 'skip' ';'
+skip = accept "skip" #- require ";" >-> \_ -> Skip
+
+-- 'begin' statements 'end'
+begin = accept "begin" -# iter parse #- require "end" >-> \xs -> Begin xs
 
 class Executable t where
   execute :: [t] -> Dictionary.T String Integer -> [Integer] -> [Integer]
