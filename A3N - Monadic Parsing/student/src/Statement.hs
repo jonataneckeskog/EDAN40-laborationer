@@ -12,6 +12,9 @@ data Statement
   | If Expr.T Statement Statement
   | Skip
   | Begin [Statement]
+  | While Expr.T Statement
+  | Read String
+  | Write Expr.T
   deriving (Show)
 
 -- x =: 5
@@ -33,6 +36,15 @@ skip = accept "skip" #- require ";" >-> \_ -> Skip
 
 -- 'begin' statements 'end'
 begin = accept "begin" -# iter parse #- require "end" >-> \xs -> Begin xs
+
+-- 'while' expr 'do' statement
+while = accept "while" -# Expr.parse #- require "do" # parse >-> \(cond, stmt) -> While cond stmt
+
+-- 'read' variable ';'
+read = accept "read" -# word #- require ";" >-> \var -> Read var
+
+-- 'write' expr ';'
+write = accept "write" -# Expr.parse #- require ";" >-> \expr -> Write expr
 
 class Executable t where
   execute :: [t] -> Dictionary.T String Integer -> [Integer] -> [Integer]
