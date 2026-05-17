@@ -29,7 +29,7 @@ ifStatement =
     # parse
     #- require "else"
     # parse
-    >-> \((cond, thenStmts), elseStmts) -> If cond thenStmts elseStmts
+    >-> \((cond, thenStmt), elseStmt) -> If cond thenStmt elseStmt
 
 -- 'skip' ';'
 skip = accept "skip" #- require ";" >-> \_ -> Skip
@@ -41,7 +41,7 @@ begin = accept "begin" -# iter parse #- require "end" >-> \xs -> Begin xs
 while = accept "while" -# Expr.parse #- require "do" # parse >-> \(cond, stmt) -> While cond stmt
 
 -- 'read' variable ';'
-read = accept "read" -# word #- require ";" >-> \var -> Read var
+readStatement = accept "read" -# word #- require ";" >-> \var -> Read var
 
 -- 'write' expr ';'
 write = accept "write" -# Expr.parse #- require ";" >-> \expr -> Write expr
@@ -62,5 +62,13 @@ instance Executable Statement where
             execute (elseStmts : stmts) dict input
 
 instance Parse Statement where
-  parse = error "Statement.parse not implemented"
-  toString = error "Statement.toString not implemented"
+  parse = assignment ! ifStatement ! skip ! begin ! while ! readStatement ! write
+  toString statement =
+    case statement of
+      Assignment s expr -> s ++ " := " ++ toString expr ++ ";"
+      If expr thenStmt elseStmt -> "if " ++ toString expr ++ " then " ++ toString thenStmt ++ " else " ++ toString elseStmt
+      Skip -> "skip;"
+      Begin stmts -> concatMap toString stmts
+      While expr stmt -> "while " ++ toString expr ++ toString stmt
+      Read s -> "read " ++ s ++ ";"
+      Write expr -> "write " ++ toString expr ++ ";"
