@@ -1,30 +1,45 @@
-module Statement(T, parse, toString, fromString, execute) where
-import Prelude hiding (return, fail)
-import Parser hiding (T)
+module Statement (T, parse, toString, fromString, execute) where
+
 import qualified Dictionary
 import qualified Expr
+import Parser hiding (T)
+import Prelude hiding (fail, return)
 
 type T = Statement
-data Statement =
-    Assignment String Expr.T |
-    If Expr.T Statement Statement
-    deriving Show
 
+data Statement
+  = Assignment String Expr.T
+  | If Expr.T Statement Statement
+  deriving (Show)
+
+-- x =: 5
+-- "x", förvänta ":=", parsa med 5 -> "x", 5 -> förvänta ";", omvandla till Assignment ("x", 5)
 assignment = word #- accept ":=" # Expr.parse #- require ";" >-> uncurry Assignment
 
+-- 'if' expr 'then' statement 'else' statement
+ifStatement =
+  accept "if"
+    -# Expr.parse
+    #- require "then"
+    # parse
+    #- require "else"
+    # parse
+    >-> \((cond, thenStmts), elseStmts) -> If cond thenStmts elseStmts
+
 class Executable t where
-    execute :: [t] -> Dictionary.T String Integer -> [Integer] -> [Integer]
+  execute :: [t] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 
 instance Executable Statement where
-    -- execute :: [Statement] -> Dictionary.T String Integer -> [Integer] -> [Integer]
-    execute (If cond thenStmts elseStmts: stmts) dict input =
-        case (Expr.value cond dict) of
-            Left err -> error err
-            Right v ->
-                if v > 0 then
-                    execute (thenStmts: stmts) dict input
-                else
-                    execute (elseStmts: stmts) dict input
+  -- execute :: [Statement] -> Dictionary.T String Integer -> [Integer] -> [Integer]
+  execute (If cond thenStmts elseStmts : stmts) dict input =
+    case (Expr.value cond dict) of
+      Left err -> error err
+      Right v ->
+        if v > 0
+          then
+            execute (thenStmts : stmts) dict input
+          else
+            execute (elseStmts : stmts) dict input
 
 instance Parse Statement where
   parse = error "Statement.parse not implemented"
