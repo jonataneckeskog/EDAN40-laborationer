@@ -15,7 +15,7 @@ data Statement
   | While Expr.T Statement
   | Read String
   | Write Expr.T
-  deriving (Show)
+  deriving (Show, Eq)
 
 -- x =: 5
 -- "x", förvänta ":=", parsa med 5 -> "x", 5 -> förvänta ";", omvandla till Assignment ("x", 5)
