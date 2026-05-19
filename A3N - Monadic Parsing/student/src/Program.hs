@@ -1,21 +1,18 @@
-module Program(T, parse, fromString, toString, exec) where
+module Program (T, parse, fromString, toString, exec) where
 
+import qualified Dictionary
 import Parser hiding (T)
 import qualified Statement
-import qualified Dictionary
-import Prelude hiding (return, fail)
+import Prelude hiding (fail, return)
 
-newtype T = Program () -- to be defined
-
-instance Eq T where
-  p1 == p2 = False -- FIXME
+newtype T = Program [Statement.T] deriving (Eq)
 
 instance Show T where
   show = toString
 
 instance Parse T where
-  parse = error "Program.parse not implemented"
-  toString = error "Program.toString not implemented"
+  parse = iter Statement.parse >-> Program
+  toString (Program stmts) = concatMap Statement.toString stmts
 
 exec :: T -> [Integer] -> [Integer]
-exec = error "Program.exec not implemented"
+exec (Program stmts) = Statement.execute stmts Dictionary.empty

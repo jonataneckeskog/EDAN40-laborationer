@@ -1,65 +1,93 @@
-module CoreParser(Parser, char, return, fail, (#), (!), (?), (#>), (>->),
-                  Parse, parse, toString, fromString) where
+module CoreParser
+  ( Parser,
+    char,
+    return,
+    fail,
+    (#),
+    (!),
+    (?),
+    (#>),
+    (>->),
+    Parse,
+    parse,
+    toString,
+    fromString,
+  )
+where
 
-import Prelude hiding (return, fail)
+import Prelude hiding (fail, return)
+
 infixl 3 !
+
 infixl 7 ?
+
 infixl 6 #
+
 infixl 5 >->
+
 infixl 4 #>
 
 class Parse a where
-    parse :: Parser a
-    fromString :: String -> a
-    fromString cs =
-        case parse cs of
-               Just(s, []) -> s
-               Just(s, cs) -> error ("garbage '"++cs++"'")
-               Nothing -> error "Nothing"
-    toString :: a -> String
+  parse :: Parser a
+  fromString :: String -> a
+  fromString cs =
+    case parse cs of
+      Just (s, []) -> s
+      Just (s, cs) -> error ("garbage '" ++ cs ++ "'")
+      Nothing -> error "Nothing"
+  toString :: a -> String
 
 type Parser a = String -> Maybe (a, String)
 
 char :: Parser Char
-char []= Nothing
-char (c:cs) = Just (c, cs)
+char [] = Nothing
+char (c : cs) = Just (c, cs)
 
 return :: a -> Parser a
 return a cs = Just (a, cs)
 
-fail ::  Parser a
+fail :: Parser a
 fail cs = Nothing
 
+-- "orElse"
+-- Run the parser m, but if it fails, run the parser n instead.
 (!) :: Parser a -> Parser a -> Parser a
 (m ! n) cs = case m cs of
-             Nothing -> n cs
-             mcs -> mcs
+  Nothing -> n cs
+  mcs -> mcs
 
+-- "satisfying"
+-- Run the parser m, but only accept the result if it passes the test p.
+-- Otherwise, pretend the parse failed.
 (?) :: Parser a -> (a -> Bool) -> Parser a
 (m ? p) cs =
-    case m cs of
+  case m cs of
     Nothing -> Nothing
-    Just(r, s) -> if p r then Just(r, s) else Nothing
+    Just (r, s) -> if p r then Just (r, s) else Nothing
 
+-- "andThen"
+-- Chain two parsers together. The result is a pair of the results of both parsers.
 (#) :: Parser a -> Parser b -> Parser (a, b)
 (m # n) cs =
-    case m cs of
+  case m cs of
     Nothing -> Nothing
-    Just(a, cs') ->
-        case n cs' of
+    Just (a, cs') ->
+      case n cs' of
         Nothing -> Nothing
-        Just(b, cs'') -> Just((a, b), cs'')
+        Just (b, cs'') -> Just ((a, b), cs'')
 
+-- "transformedBy"
 -- Signature looks like "flip fmap"...
 (>->) :: Parser a -> (a -> b) -> Parser b
 (m >-> b) cs =
-    case m cs of
-    Just(a, cs') -> Just(b a, cs')
+  case m cs of
+    Just (a, cs') -> Just (b a, cs')
     Nothing -> Nothing
 
+-- "fedInto"
 -- Signature looks like (>>=)...
 (#>) :: Parser a -> (a -> Parser b) -> Parser b
 (p #> k) cs =
-    case p cs of
+  case p cs of
     Nothing -> Nothing
-    Just(a, cs') -> k a cs'
+    Just (a, cs') -> k a cs'
