@@ -51,15 +51,27 @@ class Executable t where
 
 instance Executable Statement where
   -- execute :: [Statement] -> Dictionary.T String Integer -> [Integer] -> [Integer]
-  execute (If cond thenStmts elseStmts : stmts) dict input =
-    case (Expr.value cond dict) of
+  execute [] _ _ = []
+  execute (If cond thenStmt elseStmt : stmts) dict input =
+    case Expr.value cond dict of
       Left err -> error err
       Right v ->
         if v > 0
           then
-            execute (thenStmts : stmts) dict input
+            execute (thenStmt : stmts) dict input
           else
-            execute (elseStmts : stmts) dict input
+            execute (elseStmt : stmts) dict input
+  execute (Assignment var expr : stmts) dict input =
+    case Expr.value expr dict of
+      Left err -> error err
+      Right v -> execute stmts (Dictionary.insert (var, v) dict) input
+  execute (Skip : stmts) dict input = execute stmts dict input
+  execute (Begin innerStmts : stmts) dict input = execute (innerStmts ++ stmts) dict input
+  execute (While cond stmt : stmts) dict input =
+    let loopIf = If cond (Begin [stmt, While cond stmt]) Skip
+     in execute (loopIf : stmts) dict input
+  execute (Read var : stmts) dict input = [] -- TODO
+  execute (Write expr : stmts) dict input = [] -- TODO
 
 instance Parse Statement where
   parse = assignment ! ifStatement ! skip ! begin ! while ! readStatement ! write
