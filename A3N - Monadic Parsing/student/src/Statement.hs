@@ -70,8 +70,12 @@ instance Executable Statement where
   execute (While cond stmt : stmts) dict input =
     let loopIf = If cond (Begin [stmt, While cond stmt]) Skip
      in execute (loopIf : stmts) dict input
-  execute (Read var : stmts) dict input = [] -- TODO
-  execute (Write expr : stmts) dict input = [] -- TODO
+  execute (Read var : stmts) dict (input : inputs) = execute stmts (Dictionary.insert (var, input) dict) inputs
+  execute (Read _ : _) _ [] = error "Input stream is emtpty, cannot read variable"
+  execute (Write expr : stmts) dict input =
+    case Expr.value expr dict of
+      Left err -> error err
+      Right v -> v : execute stmts dict input -- Write v to the output stream
 
 instance Parse Statement where
   parse = assignment ! ifStatement ! skip ! begin ! while ! readStatement ! write
