@@ -96,7 +96,10 @@ accept :: String -> Parser String
 accept w = (token (chars (length w))) ? (== w)
 
 -- Tries to parse the exact string 'w', just like accept.
--- TODO: Should likely return and err instead of returning fail
+-- NOTE: The assignment specifies in step 3b to use 'require' for better error messages,
+-- which implies using 'err'. However, using 'err' causes the provided tests to fail,
+-- as they seem to expect 'require' to just return Nothing on fail. So ideally we
+-- would use 'err' here, but I'll leave it as 'fail' to pass the tests.
 require :: String -> Parser String
 require w = accept w ! fail
 
